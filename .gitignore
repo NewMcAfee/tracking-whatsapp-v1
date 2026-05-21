@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Claude / IDE local
+.claude/
+.vscode/
+.idea/
+
+# Rascunhos locais
+_drafts/
+*.local.md

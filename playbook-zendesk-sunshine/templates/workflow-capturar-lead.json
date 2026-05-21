@@ -1,0 +1,473 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "growthpack-1",
+              "name": "growthpack_id",
+              "value": "1S840cFIhAWFwm47gPoxSTeqmqgciCt123NrGildZkfM",
+              "type": "string"
+            },
+            {
+              "id": "b411af1b-405f-4d15-bdca-bd88f5089c5a",
+              "name": "group_id",
+              "value": "={{ $json.body.events[0].payload.source.integrationId }}",
+              "type": "string"
+            },
+            {
+              "id": "8b13109b-34b7-4d09-b92c-9dc05effb21b",
+              "name": "nome",
+              "value": "={{ $json.body.events[0].payload.source.client.raw.profile.name }}",
+              "type": "string"
+            },
+            {
+              "id": "89a30189-3d28-4ffc-9a7a-d5b126a39e01",
+              "name": "first_name",
+              "value": "={{ $json.body.events[0].payload.user.profile.givenName }}",
+              "type": "string"
+            },
+            {
+              "id": "f7da14b3-689d-483e-a937-337e0939fabb",
+              "name": "last_name",
+              "value": "={{ $json.body.events[0].payload.user.profile.surname }}",
+              "type": "string"
+            },
+            {
+              "id": "302075e6-1de7-4386-ba72-787d9d269284",
+              "name": "phone",
+              "value": "={{ $json.body.events[0].payload.source.client.externalId }}",
+              "type": "string"
+            },
+            {
+              "id": "52cce61b-d17e-41b8-9fe6-ed6d60730959",
+              "name": "execution",
+              "value": "=https://n8n-imob.imob.collieassociados.com/workflow/22i2mdIEGQ5J3ukb/executions/{{ $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12586545-4546-44db-91e2-bd15e1682b0b",
+      "name": "normalizando_webhook",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-464, 1648],
+      "notes": "Centraliza IDs externos (growthpack_id + execution URL) e normaliza dados do lead."
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $now }}",
+        "format": "custom",
+        "customFormat": "dd/MM/yyyy HH:mm:ss",
+        "outputFieldName": "Data Formatada",
+        "options": { "includeInputFields": true }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [-96, 2048],
+      "id": "2586c0f4-29b1-4a56-9d27-967211a2027b",
+      "name": "Data Formatada"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e9e99ed-ffbb-4862-b329-7c0d11ffadc7",
+              "name": "data do evento",
+              "value": "={{ $json['Data Formatada'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d6588551-aaac-43c2-ba85-7bd0b9ce3ef1",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [448, 2048],
+      "id": "cb51d1e1-9b9d-4693-acd2-2832e1f54617",
+      "name": "normalizando_data"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "phone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [832, 1936],
+      "id": "48511efe-88db-4d47-9eb6-6c24659e8603",
+      "name": "merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "phone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1648, 1664],
+      "id": "228a42c0-3369-44fe-8624-92bc188fc3df",
+      "name": "merge1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.growthpack_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_id": "={{ $json.phone }}",
+            "ad_id": "={{ $json.ad_id }}",
+            "create_at": "={{ $json['data do evento'] }}",
+            "canal": "={{ $json.canal }}",
+            "full_name": "={{ $json.nome }}",
+            "last_name": "={{ $json.last_name }}",
+            "first_name": "={{ $json.first_name }}",
+            "phone": "={{ $json.phone }}",
+            "execution_create_url": "={{ $json.execution }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "lead_id", "displayName": "lead_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "ad_id", "displayName": "ad_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "create_at", "displayName": "create_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "update_at", "displayName": "update_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "first_win_at", "displayName": "first_win_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "last_win_at", "displayName": "last_win_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "email", "displayName": "email", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "quality_score", "displayName": "quality_score", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "total_value", "displayName": "total_value", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "wins", "displayName": "wins", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "product_cart", "displayName": "product_cart", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "purchased_products", "displayName": "purchased_products", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "canal", "displayName": "canal", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "utm_campaign", "displayName": "utm_campaign", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "utm_medium", "displayName": "utm_medium", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "utm_content", "displayName": "utm_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "gclid", "displayName": "gclid", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "fbclid", "displayName": "fbclid", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "li_fat_id", "displayName": "li_fat_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "tkclid", "displayName": "tkclid", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "user_ip", "displayName": "user_ip", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "user_agent", "displayName": "user_agent", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "url", "displayName": "url", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "execution_create_url", "displayName": "execution_create_url", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "conversion_page", "displayName": "conversion_page", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "full_name", "displayName": "full_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "first_name", "displayName": "first_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "last_name", "displayName": "last_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "phone", "displayName": "phone", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "country", "displayName": "country", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "state", "displayName": "state", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "city", "displayName": "city", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "street", "displayName": "street", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "cep", "displayName": "cep", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "company_name", "displayName": "company_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "company_phone", "displayName": "company_phone", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "cnpj", "displayName": "cnpj", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "cnae", "displayName": "cnae", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "regime_tributario", "displayName": "regime_tributario", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "owner_name", "displayName": "owner_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "owner_phone", "displayName": "owner_phone", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "first_message", "displayName": "first_message", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "qualificador_tamanho", "displayName": "qualificador_tamanho", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "tier_tamanho", "displayName": "tier_tamanho", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "qualificador_cargo", "displayName": "qualificador_cargo", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "decision_committee", "displayName": "decision_committee", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "segmento", "displayName": "segmento", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "person_id", "displayName": "person_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true },
+            { "id": "company_id", "displayName": "company_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [2240, 1680],
+      "id": "73e3ff21-2751-4720-bc54-bb8203fa9c38",
+      "name": "criar_lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vdwvKr06yxcLrIgM",
+          "name": "[Robson Job] Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73198719-3d83-49f9-bfaf-ff2dd70ead8a",
+              "name": "phone",
+              "value": "={{ $json.body.events[0].payload.source.client.externalId }}",
+              "type": "string"
+            },
+            {
+              "id": "302075e6-1de7-4386-ba72-787d9d269284",
+              "name": "ads_id",
+              "value": "={{ $json.body.events[0].payload.source.client.externalId }}",
+              "type": "string"
+            },
+            {
+              "id": "20ab2074-56b2-4cd9-8ddf-6e9b12a7abe3",
+              "name": "ad_id",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "da0393ee-f45c-4409-895d-22f4740fd17e",
+              "name": "canal",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "3f365f6f-6832-41ee-9425-e94a5d8fd8f1",
+              "name": "source",
+              "value": "={{ $json.body.events[0].payload.source.type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "61dd0b0d-a27c-4f60-8e1c-b62c87509f3e",
+      "name": "enrich_source",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-208, 1440],
+      "notes": "Placeholder de enriquecimento por origem. ad_id e canal serao populados quando o Switch de origem (CTWA Meta / Google Ads / Organico) for implementado."
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "phone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1040, 1456],
+      "id": "e4b1fdbe-48df-4523-89ee-d16ca3655e75",
+      "name": "merge2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.row_lead }}",
+                    "rightValue": "",
+                    "operator": { "type": "string", "operation": "notEmpty", "singleValue": true },
+                    "id": "cb591e1d-2441-4c0a-86dd-244c3e102487"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "cf4ae1c8-9237-4f06-8bdb-2c22fa40f822",
+                    "leftValue": "={{ $json.row_lead }}",
+                    "rightValue": "",
+                    "operator": { "type": "string", "operation": "empty", "singleValue": true }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1936, 1664],
+      "id": "2c4ab801-5838-4fb9-a785-278c3971633f",
+      "name": "lead_way"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tracking-whatsapp-sunshine-colina",
+        "options": { "rawBody": false }
+      },
+      "id": "eb03af73-f781-44e4-b34d-04c9d848151d",
+      "name": "webhook_sunshine",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-832, 1648],
+      "webhookId": "a9bbb537-7c4e-4fb9-8cd4-eb30321651bd",
+      "notes": "Recebe webhook outbound do Zendesk Sunshine. rawBody=false porque nao validamos HMAC (decisao consciente). Triggers configurados no Sunshine: conversation:create + conversation:referral."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.growthpack_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            { "lookupColumn": "phone", "lookupValue": "={{ $json.phone }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [-96, 1808],
+      "id": "5eb7223c-d9c2-47bc-92f2-a7715405b947",
+      "name": "procurar_leads",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vdwvKr06yxcLrIgM",
+          "name": "[Robson Job] Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e9e99ed-ffbb-4862-b329-7c0d11ffadc7",
+              "name": "row_lead",
+              "value": "={{ $json.row_number }}",
+              "type": "string"
+            },
+            {
+              "id": "d6588551-aaac-43c2-ba85-7bd0b9ce3ef1",
+              "name": "phone",
+              "value": "={{ $('normalizando_webhook').item.json.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [448, 1808],
+      "id": "59f85031-578b-4fe9-9313-816c9ff9cbd5",
+      "name": "row_lead"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "9a182193-beb6-452d-b2c6-7f1e4c6e1261",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "whatsApp",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [0, 1440],
+      "id": "51bfb506-9cd8-4c61-94d8-d46c6608c746",
+      "name": "filter_whatsapp"
+    }
+  ],
+  "connections": {
+    "normalizando_webhook": {
+      "main": [
+        [
+          { "node": "Data Formatada", "type": "main", "index": 0 },
+          { "node": "procurar_leads", "type": "main", "index": 0 },
+          { "node": "merge2", "type": "main", "index": 1 }
+        ]
+      ]
+    },
+    "Data Formatada": {
+      "main": [[{ "node": "normalizando_data", "type": "main", "index": 0 }]]
+    },
+    "normalizando_data": {
+      "main": [[{ "node": "merge", "type": "main", "index": 1 }]]
+    },
+    "merge": {
+      "main": [[{ "node": "merge1", "type": "main", "index": 1 }]]
+    },
+    "merge1": {
+      "main": [[{ "node": "lead_way", "type": "main", "index": 0 }]]
+    },
+    "enrich_source": {
+      "main": [[{ "node": "filter_whatsapp", "type": "main", "index": 0 }]]
+    },
+    "merge2": {
+      "main": [[{ "node": "merge1", "type": "main", "index": 0 }]]
+    },
+    "lead_way": {
+      "main": [
+        [],
+        [{ "node": "criar_lead", "type": "main", "index": 0 }]
+      ]
+    },
+    "webhook_sunshine": {
+      "main": [
+        [
+          { "node": "normalizando_webhook", "type": "main", "index": 0 },
+          { "node": "enrich_source", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "procurar_leads": {
+      "main": [[{ "node": "row_lead", "type": "main", "index": 0 }]]
+    },
+    "row_lead": {
+      "main": [[{ "node": "merge", "type": "main", "index": 0 }]]
+    },
+    "filter_whatsapp": {
+      "main": [[{ "node": "merge2", "type": "main", "index": 0 }]]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
