@@ -1,6 +1,6 @@
 # tracking-whatsapp-v1
 
-> **Caderno de estudo.** Como tracquear campanhas Meta + Google Ads quando o lead vai pro WhatsApp em vez de um formulário — começa conceitual e desce até um playbook aplicado num cliente piloto real. Não é produto, não é skill estável; é raciocínio em voz alta evoluindo conforme o problema é destrinchado.
+> **Caderno de estudo.** Como fazer tracking de campanhas Meta + Google Ads quando o lead vai pro WhatsApp em vez de um formulário — começa conceitual e desce até um playbook aplicado num cliente piloto real. Não é produto, não é skill estável; é raciocínio em voz alta evoluindo conforme o problema é destrinchado.
 
 ---
 
